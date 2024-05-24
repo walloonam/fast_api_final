@@ -1,6 +1,6 @@
 import asyncio
 from fastapi.responses import JSONResponse
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from pydantic import ValidationError
 from models import Request, Response, Access
@@ -8,6 +8,13 @@ from services import get_ec2_metric_statistics_async, get_rds_metric_statistics_
 import uvicorn
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 모든 origin 허용. 실제 배포에서는 필요에 따라 수정
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
+)
 
 @app.post("/api/metrics/", response_model_exclude_unset=True)
 async def get_metrics(access: Access):
