@@ -129,8 +129,8 @@ async def get_rds_metric_statistics_async(access_key_id: str, secret_access_key:
                 metrics={}
             )
 
-            metrics = ['CPUUtilization', 'DatabaseConnections', 'FreeStorageSpace']
-
+            # metrics = ['CPUUtilization', 'DatabaseConnections', 'FreeStorageSpace']
+            metrics = ['CPUUtilization']
             for metric_name in metrics:
                 response = await asyncio.get_event_loop().run_in_executor(None, 
                     lambda: cloudwatch.get_metric_statistics(
@@ -214,12 +214,14 @@ async def reco_instance_ec2(instance_type: str, engine:str, maximum: float):
                     reco_cpu = int(ec2_vcpu) / int(reco_instance.ec2_vcpu) / 2
                     reco_instance_memory_numeric = float(reco_instance.ec2_memory.replace("GiB", "").strip())
                     ec2_memory_numeric = float(ec2_memory.replace("GiB", "").strip())
-                    reco_memory = ec2_memory_numeric / reco_instance_memory_numeric / 2                   
-                    if maximum * (1.58 **reco_cpu)*(1.22** reco_memory) < 71:
+                    reco_memory = ec2_memory_numeric / reco_instance_memory_numeric / 2  
+                    expected_max= maximum * (1.58 **reco_cpu)*(1.22** reco_memory)         
+                    if expected_max < 70:
                         reco.append({
                             "instance_type": reco_instance.ec2_instance_type,
                             "ec2_os_engine" : reco_instance.ec2_os_engine,
-                            "price": float(reco_instance.ec2_price)
+                            "price": float(reco_instance.ec2_price),
+                            "expected_max" : float(expected_max)
                         })
 
                 return reco
@@ -280,13 +282,13 @@ async def reco_instance_rds(instance_type: str, engine:str, maximum:float):
                     reco_instance_memory_numeric = float(reco_instance.memory.replace("GiB", "").strip())
                     memory_numeric = float(memory.replace("GiB", "").strip())
                     reco_memory = memory_numeric / reco_instance_memory_numeric / 2 
-                    print(reco_instance, " ", reco_cpu, " " ,reco_memory)
-                    print(maximum * (1.58 **reco_cpu)*(1.22** reco_memory))                  
-                    if maximum * (1.58 **reco_cpu)*(1.22** reco_memory) < 71:
+                    expected_max = maximum * (1.58 **reco_cpu)*(1.22** reco_memory)
+                    if expected_max < 70:
                         reco.append({
                             "instance_type": reco_instance.instance_type,
                             "rds_engine" : reco_instance.ENGINE,
-                            "price": float(reco_instance.price)
+                            "price": float(reco_instance.price),
+                            "expected_max" : float(expected_max)
                         })
 
                 return reco
