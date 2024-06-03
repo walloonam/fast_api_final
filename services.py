@@ -184,8 +184,10 @@ async def reco_instance_ec2(instance_type: str, engine:str, maximum: float):
                     WHERE ec2_instance_type = :instance_type
                     AND ec2_os_engine = :engine 
                     AND `description` = "UNKNOWN"
+                    ORDER BY ec2_price ASC
                 """), {"instance_type": instance_type,"engine": engine})
                 row = result.fetchone()
+                print(row)
 
                 if not row:
                     raise HTTPException(status_code=404, detail=f"No matching instance type found for '{instance_type}'")
@@ -194,7 +196,7 @@ async def reco_instance_ec2(instance_type: str, engine:str, maximum: float):
 
                 # instance_type의 . 이전 부분을 추출
                 like_pattern = instance_type.split('.')[0] + '.%'
-
+                print(ec2_price)
                 # 가격이 주어진 instance_type보다 낮은 . 이전 부분이 같은 인스턴스 유형들을 조회
                 result = await session.execute(text("""
                     SELECT DISTINCT ec2_instance_type, ec2_vcpu, ec2_memory, ec2_price, ec2_os_engine
