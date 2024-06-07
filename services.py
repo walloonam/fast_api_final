@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from sqlalchemy import text
 from database import async_engine
 from sqlalchemy.ext.asyncio import AsyncSession
+import math
 
 async def get_ec2_metric_statistics_async(access_key_id: str, secret_access_key: str, region_name: str) -> List[EC2Instance]:
     try:
@@ -217,7 +218,8 @@ async def reco_instance_ec2(instance_type: str, engine:str, maximum: float):
                     reco_instance_memory_numeric = float(reco_instance.ec2_memory.replace("GiB", "").strip())
                     ec2_memory_numeric = float(ec2_memory.replace("GiB", "").strip())
                     reco_memory = ec2_memory_numeric / reco_instance_memory_numeric / 2  
-                    expected_max= maximum * (1.58 **reco_cpu)*(1.22** reco_memory)         
+                    expected_max= maximum * (1.58 **math.floor(reco_cpu))*(1.22** math.floor(reco_memory))         
+                    print(reco_cpu, reco_memory, expected_max)
                     if expected_max < 70:
                         reco.append({
                             "instance_type": reco_instance.ec2_instance_type,
@@ -284,7 +286,7 @@ async def reco_instance_rds(instance_type: str, engine:str, maximum:float):
                     reco_instance_memory_numeric = float(reco_instance.memory.replace("GiB", "").strip())
                     memory_numeric = float(memory.replace("GiB", "").strip())
                     reco_memory = memory_numeric / reco_instance_memory_numeric / 2 
-                    expected_max = maximum * (1.58 **reco_cpu)*(1.22** reco_memory)
+                    expected_max = maximum * (1.58 **math.floor(reco_cpu))*(1.22**math.floor(reco_memory))
                     if expected_max < 70:
                         reco.append({
                             "instance_type": reco_instance.instance_type,
